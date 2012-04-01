@@ -1,0 +1,149 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\Smoke">
+      <UniqueIdentifier>{61623432-f56b-4792-a874-8b9946ef2d92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\tinyxmlSTL">
+      <UniqueIdentifier>{206e852c-8e8c-47fe-a1bd-bee8536493c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Smoke">
+      <UniqueIdentifier>{8bcb2227-fbc8-457a-b400-c0ab8c2353bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\tinyxmlSTl">
+      <UniqueIdentifier>{be0f7f1d-7837-4ca5-ad64-3cb6c3d52d59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\worlds">
+      <UniqueIdentifier>{48627faf-3b43-4d95-9b7b-17ddfec5bd96}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="SourceCode\basic_math.cpp">
+      <Filter>Source Files\Smoke</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCode\world.cpp">
+      <Filter>Source Files\Smoke</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCode\camera.cpp">
+      <Filter>Source Files\Smoke</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCode\constants.cpp">
+      <Filter>Source Files\Smoke</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCode\fps.cpp">
+      <Filter>Source Files\Smoke</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCode\grid_data.cpp">
+      <Filter>Source Files\Smoke</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCode\mac_grid.cpp">
+      <Filter>Source Files\Smoke</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCode\main.cpp">
+      <Filter>Source Files\Smoke</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCode\smoke_sim.cpp">
+      <Filter>Source Files\Smoke</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCode\stb_image.c">
+      <Filter>Source Files\Smoke</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCode\stb_image_write.c">
+      <Filter>Source Files\Smoke</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCode\vec.cpp">
+      <Filter>Source Files\Smoke</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCode\tinystr.cpp">
+      <Filter>Source Files\tinyxmlSTL</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCode\tinyxmlerror.cpp">
+      <Filter>Source Files\tinyxmlSTL</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCode\tinyxmlparser.cpp">
+      <Filter>Source Files\tinyxmlSTL</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCode\tinyxml.cpp">
+      <Filter>Source Files\tinyxmlSTL</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="SourceCode\basic_math.h">
+      <Filter>Header Files\Smoke</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCode\world.h">
+      <Filter>Header Files\Smoke</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCode\camera.h">
+      <Filter>Header Files\Smoke</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCode\clock.h">
+      <Filter>Header Files\Smoke</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCode\constants.h">
+      <Filter>Header Files\Smoke</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCode\custom_output.h">
+      <Filter>Header Files\Smoke</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCode\fps.h">
+      <Filter>Header Files\Smoke</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCode\grid_data.h">
+      <Filter>Header Files\Smoke</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCode\grid_data_matrix.h">
+      <Filter>Header Files\Smoke</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCode\mac_grid.h">
+      <Filter>Header Files\Smoke</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCode\matrix.h">
+      <Filter>Header Files\Smoke</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCode\open_gl_headers.h">
+      <Filter>Header Files\Smoke</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCode\smoke_sim.h">
+      <Filter>Header Files\Smoke</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCode\stb_image.h">
+      <Filter>Header Files\Smoke</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCode\stb_image_write.h">
+      <Filter>Header Files\Smoke</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCode\timer.h">
+      <Filter>Header Files\Smoke</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCode\vec.h">
+      <Filter>Header Files\Smoke</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCode\tinystr.h">
+      <Filter>Header Files\tinyxmlSTl</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCode\tinyxml.h">
+      <Filter>Header Files\tinyxmlSTl</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\worlds\cylinders.xml">
+      <Filter>Source Files\worlds</Filter>
+    </None>
+    <None Include="..\worlds\ground.xml">
+      <Filter>Source Files\worlds</Filter>
+    </None>
+  </ItemGroup>
+</Project>
