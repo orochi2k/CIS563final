@@ -1,0 +1,37 @@
+﻿Build started 4/8/2012 6:17:58 PM.
+     1>Project "C:\CIS 563\Final Project\Final Smoke (fix 1)\Final Smoke\SmokeSimStarterKit\SmokeSim\SmokeSim\SmokeSim.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Touching "x64\Release\SmokeSim.unsuccessfulbuild".
+       ClCompile:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\x86_amd64\CL.exe /c /Zi /nologo /W3 /WX- /O2 /Oi /GL /D _MBCS /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"x64\Release\\" /Fd"x64\Release\vc100.pdb" /Gd /TP /errorReport:prompt SourceCode\blurfilter.cpp SourceCode\constants.cpp SourceCode\mac_grid.cpp SourceCode\main.cpp SourceCode\smoke_sim.cpp SourceCode\world.cpp
+         blurfilter.cpp
+         constants.cpp
+         mac_grid.cpp
+         main.cpp
+         smoke_sim.cpp
+         world.cpp
+         All outputs are up-to-date.
+       Link:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"C:\CIS 563\Final Project\Final Smoke (fix 1)\Final Smoke\SmokeSimStarterKit\SmokeSim\x64\Release\SmokeSim.exe" /NOLOGO opengl32.lib glu32.lib glut32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"x64\Release\SmokeSim.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\CIS 563\Final Project\Final Smoke (fix 1)\Final Smoke\SmokeSimStarterKit\SmokeSim\x64\Release\SmokeSim.pdb" /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\CIS 563\Final Project\Final Smoke (fix 1)\Final Smoke\SmokeSimStarterKit\SmokeSim\x64\Release\SmokeSim.lib" /MACHINE:X64 x64\Release\basic_math.obj
+         x64\Release\blurfilter.obj
+         x64\Release\camera.obj
+         x64\Release\constants.obj
+         x64\Release\fps.obj
+         x64\Release\grid_data.obj
+         x64\Release\mac_grid.obj
+         x64\Release\main.obj
+         x64\Release\smoke_sim.obj
+         x64\Release\stb_image.obj
+         x64\Release\stb_image_write.obj
+         x64\Release\tinystr.obj
+         x64\Release\tinyxml.obj
+         x64\Release\tinyxmlerror.obj
+         x64\Release\tinyxmlparser.obj
+         x64\Release\vec.obj
+         x64\Release\world.obj
+     1>LINK : fatal error LNK1181: cannot open input file 'glut32.lib'
+     1>Done Building Project "C:\CIS 563\Final Project\Final Smoke (fix 1)\Final Smoke\SmokeSimStarterKit\SmokeSim\SmokeSim\SmokeSim.vcxproj" (build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:03.60
