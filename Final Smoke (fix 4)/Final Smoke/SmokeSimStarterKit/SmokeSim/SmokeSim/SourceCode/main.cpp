@@ -8,10 +8,8 @@
 #include "basic_math.h"
 #include "world.h"
 
-World theWorldCylinder("worlds/cylinders.xml");
 
-//add an object of Macgrid class to initialize     
-MACGrid macgrid; 
+World theWorldCylinder("worlds/cylinders.xml");
 
 // Geometry and whatnot 
 SmokeSim theSmokeSim;
@@ -109,7 +107,7 @@ void onKeyboardCb(unsigned char key, int x, int y)
    else if (key == '>') isRunning = true;
    else if (key == '=') isRunning = false;
    else if (key == '<') theSmokeSim.reset();
-   else if (key == 27) exit(0); // ESC Key         
+   else if (key == 27) exit(0); // ESC Key  
    glutPostRedisplay();
 }
 
@@ -129,12 +127,6 @@ void onKeyboardSpecialCb(int key, int x, int y)
 
 void onTimerCb(int value)
 {
-   //initialization of Vf, Vd, and Vg 
-   macgrid.SetParamVf(15.0);
-   macgrid.SetParamVd(30.0);
-   macgrid.SetParamVg(0.0);
-//   macgrid.SetParamSigma(1.0);
-
    if (isRunning) theSmokeSim.step();
    glutTimerFunc(theMillisecondsPerFrame, onTimerCb, 0);    
    glutPostRedisplay();
@@ -184,7 +176,7 @@ void drawOverlay()
 
 void onDrawCb()
 {
-	// Keep track of time    
+	// Keep track of time
 	theFpsTracker.timestamp();
 
 	// Draw Scene and overlay

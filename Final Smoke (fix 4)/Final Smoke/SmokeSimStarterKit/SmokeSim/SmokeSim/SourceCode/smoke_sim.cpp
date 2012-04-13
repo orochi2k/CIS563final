@@ -24,22 +24,19 @@ void SmokeSim::reset()
 
 void SmokeSim::step()
 {
-	double dt = 0.04;//0.1;
+	double dt = 0.04;
 
    // Step0: Gather user forces  
    mGrid.updateSources();
-
-   // added step, add attenuateMomentum and applyDrivingForce
-  // mGrid.applyDrivingForce();
-  // mGrid.attenuateMomentum();
-
+   //mGrid.project(dt);
+   mGrid.evil_driven();
    // Step1: Calculate new velocities
    mGrid.advectVelocity(dt);
    mGrid.addExternalForces(dt);
-   mGrid.project(dt);
+   //mGrid.project(dt);
 
    // Step2: Calculate new temperature  
-     mGrid.advectTemperature(dt);
+    //mGrid.advectTemperature(dt);
 
    // Step3: Calculate new density 
     mGrid.advectDensity(dt);

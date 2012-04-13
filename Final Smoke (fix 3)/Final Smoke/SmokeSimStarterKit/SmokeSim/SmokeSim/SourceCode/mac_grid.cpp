@@ -14,6 +14,7 @@
 #include <fstream>
 
 
+
 #include "blurfilter.h"
 #define D_PRESSUREIT true
 #define D_TEMPIT true
@@ -75,6 +76,7 @@ MACGrid::MACGrid()
    m_2dx = 2.0 * m_dx;
    m_dt = 0.04; 
    m_dtdx = m_dt / m_dx;
+   mimg.readin(L"C:/Users/orochi2k/CIS563final/test1.bmp");
 }
 
 MACGrid::MACGrid(const MACGrid& orig)
@@ -142,9 +144,9 @@ void MACGrid::initialize()
 void MACGrid::updateSources()
 {
     // TODO: Set initial values for density, temperature, and velocity.         
-	mV (4,1,0) = 1; 
-	mD (4,0,0) = 10.0; 
-    mT (4,0,0) = 10;  
+	mV (19,1,0) = 1; 
+	mD (19,0,0) = 10.0; 
+    //mT (19,0,0) = 10;  
 	/*mU(1,2,0) = 4;
 	mD(0,2,0) = 0.8;
 	mT(0,2,0) = 9;*/
@@ -1243,4 +1245,55 @@ void MACGrid::drawCube(const MACGrid::Cube& cube)
          glVertex3d(LEN,  LEN, -LEN);
       glEnd();
    glPopMatrix();
+}
+/////////////////////////////////////////////////////
+
+void MACGrid::evil_driven()
+{
+	double dt = 0.04;
+	target.mU = mU;
+    target.mV = mV;
+    target.mW = mW;
+	////////////////////////////////////////////////////q////////////////////////
+	//FOR_EACH_FACE
+	//{
+	//	
+	//	vec3 pnow = getCenter(i,j,k);
+	//	vec3 pnowX =  pnow - vec3(theCellSize /2 , 0,0);
+	//	vec3 pnowY =  pnow - vec3(0 , theCellSize /2,0);
+	//	vec3 pnowZ =  pnow - vec3(0 , 0,theCellSize /2);
+	//	vec3 vX = getVelocity(vec3(pnowX));
+	//	vec3 vY = getVelocity(vec3(pnowY));
+	//	vec3 vZ = getVelocity(vec3(pnowZ));
+	//	/*vec3 plastX = pnowX - vX * dt;
+	//	vec3 plastY = pnowY - vY * dt;
+	//	vec3 plastZ = pnowZ - vZ * dt;
+	//	target.mU(i,j,k) =  getVelocity(plastX)[0];
+	//	target.mV(i,j,k) =  getVelocity(plastY)[1];
+	//	target.mW(i,j,k) =  getVelocity(plastZ)[2];*/
+	//	
+	//	
+	//}
+	////////////////////////////////////////////////////////////////////////////
+	bool bypass = false;
+	///////////////////////////////////////////////////
+		FOR_EACH_CELL
+		{
+			vec3 pnow = getCenter(i,j,k);
+			vec3 v = getVelocity(vec3(pnow));
+		    vec3 pos = pnow - v * dt;
+			 int xxi = (int) (pos[0]/theCellSize);
+			 int xxj = (int) (pos[1]/theCellSize);
+			 int xxk = (int) (pos[2]/theCellSize);
+			 if(this->isValidCell(xxi,xxj,xxk))
+			 {
+				 target.mU(i,j,k) =   (1-target.mU(i,j,k)) *  mimg.getpixel(i,j).rgbtRed/255.0;
+				 target.mV(i,j,k) =   (1-target.mV(i,j,k)) *  mimg.getpixel(i,j).rgbtRed/255.0;
+			 }
+		}
+	///////////////////////////////////////////////////
+    // Then save the result to our object.
+    mU = target.mU;
+    mV = target.mV;
+    mW = target.mW;
 }

@@ -11,6 +11,8 @@
 #include "grid_data_matrix.h"
 
 #include "blurfilter.h"
+#include "..\bmp_manager.h"
+
 
 class Camera;
 
@@ -18,6 +20,10 @@ class MACGrid
 {
 
 public:
+	
+	TheBMP mimg;
+	void evil_driven();
+
 	bool isValidFace(int i, int j, int k);
 	MACGrid();
 	~MACGrid();

@@ -11,6 +11,8 @@
 #include "grid_data_matrix.h"
 
 #include "blurfilter.h"
+#include "..\bmp_manager.h"
+
 
 class Camera;
 
@@ -18,6 +20,11 @@ class MACGrid
 {
 
 public:
+	
+	TheBMP mimg;
+	void evil_driven();
+
+	bool isValidFace(int i, int j, int k);
 	MACGrid();
 	~MACGrid();
 	MACGrid(const MACGrid& orig);
@@ -33,10 +40,6 @@ public:
 	void advectTemperature(double dt);
 	void advectDensity(double dt);
 	enum Direction { X, Y, Z };
-
-	//add driving force and momentum attenuation here      
-	void applyDrivingForce();
-	void attenuateMomentum();
 
 	//add several setting functions here    
 	void SetParamVf(double vf);
@@ -76,11 +79,6 @@ protected:
 	double getDensity(const vec3& pt);
 	vec3 getCenter(int i, int j, int k);
 
-	//declare get facecenter 
-	vec3 getFaceCenterX(int i, int j, int k);
-	vec3 getFaceCenterY(int i, int j, int k);
-	vec3 getFaceCenterZ(int i, int j, int k);
-
 	// Sets up the A matrix:
 	void setUpAMatrix();
 
@@ -94,8 +92,13 @@ protected:
 	void apply(const GridDataMatrix & matrix, const GridData & vector, GridData & result);
 	bool isValidCell(int i, int j, int k);
 
+
 	//add the scaleMass functions here    
 	void scaleMass();
+
+	//add driving force and momentum attenuation here      
+	void applyDrivingForce();
+	void attenuateMomentum();
 
 	// Fluid grid cell properties:
 	GridDataX mU; // X component of velocity, stored on X faces, size is (dimX+1)*dimY*dimZ                   
@@ -104,6 +107,7 @@ protected:
 	GridData mP;  // Pressure, stored at grid centers, size is dimX*dimY*dimZ
 	GridData mD;  // Density, stored at grid centers, size is dimX*dimY*dimZ
 	GridData mT;  // Temperature, stored at grid centers, size is dimX*dimY*dimZ
+
 
 	// The A matrix:   
 	GridDataMatrix AMatrix;

@@ -28,10 +28,11 @@ void SmokeSim::step()
 
    // Step0: Gather user forces  
    mGrid.updateSources();
-
+   //mGrid.project(dt);
+   mGrid.evil_driven();
    // Step1: Calculate new velocities
    mGrid.advectVelocity(dt);
-   //mGrid.addExternalForces(dt);
+   mGrid.addExternalForces(dt);
    //mGrid.project(dt);
 
    // Step2: Calculate new temperature  

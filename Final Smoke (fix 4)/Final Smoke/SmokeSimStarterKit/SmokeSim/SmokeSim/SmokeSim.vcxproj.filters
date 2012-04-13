@@ -81,6 +81,9 @@
     <ClCompile Include="SourceCode\blurfilter.cpp">
       <Filter>Source Files\Smoke</Filter>
     </ClCompile>
+    <ClCompile Include="bmp_manager.cpp">
+      <Filter>Source Files\Smoke</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SourceCode\basic_math.h">
@@ -141,6 +144,9 @@
       <Filter>Header Files\tinyxmlSTl</Filter>
     </ClInclude>
     <ClInclude Include="SourceCode\blurfilter.h">
+      <Filter>Header Files\Smoke</Filter>
+    </ClInclude>
+    <ClInclude Include="bmp_manager.h">
       <Filter>Header Files\Smoke</Filter>
     </ClInclude>
   </ItemGroup>

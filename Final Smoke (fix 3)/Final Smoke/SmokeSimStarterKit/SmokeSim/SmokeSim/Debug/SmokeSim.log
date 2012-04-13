@@ -1,12 +1,14 @@
-﻿Build started 4/13/2012 4:46:18 PM.
+﻿Build started 4/13/2012 6:49:04 PM.
      1>Project "C:\Users\orochi2k\CIS563final\Final Smoke (fix 3)\Final Smoke\SmokeSimStarterKit\SmokeSim\SmokeSim\SmokeSim.vcxproj" on node 2 (build target(s)).
      1>InitializeBuildStatus:
          Creating "Debug\SmokeSim.unsuccessfulbuild" because "AlwaysCreate" was specified.
        ClCompile:
-         All outputs are up-to-date.
+         F:\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt SourceCode\smoke_sim.cpp
+         smoke_sim.cpp
          All outputs are up-to-date.
        Link:
-         F:\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\orochi2k\CIS563final\Final Smoke (fix 3)\Final Smoke\SmokeSimStarterKit\SmokeSim\Debug\SmokeSim.exe" /NOLOGO opengl32.lib glu32.lib glut32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug\SmokeSim.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\orochi2k\CIS563final\Final Smoke (fix 3)\Final Smoke\SmokeSimStarterKit\SmokeSim\Debug\SmokeSim.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\orochi2k\CIS563final\Final Smoke (fix 3)\Final Smoke\SmokeSimStarterKit\SmokeSim\Debug\SmokeSim.lib" /MACHINE:X86 Debug\basic_math.obj
+         F:\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\orochi2k\CIS563final\Final Smoke (fix 3)\Final Smoke\SmokeSimStarterKit\SmokeSim\Debug\SmokeSim.exe" /NOLOGO opengl32.lib glu32.lib glut32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug\SmokeSim.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\orochi2k\CIS563final\Final Smoke (fix 3)\Final Smoke\SmokeSimStarterKit\SmokeSim\Debug\SmokeSim.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\orochi2k\CIS563final\Final Smoke (fix 3)\Final Smoke\SmokeSimStarterKit\SmokeSim\Debug\SmokeSim.lib" /MACHINE:X86 Debug\bmp_manager.obj
+         Debug\basic_math.obj
          Debug\blurfilter.obj
          Debug\camera.obj
          Debug\constants.obj
@@ -34,4 +36,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:00.45
+Time Elapsed 00:00:01.41

@@ -13,25 +13,17 @@
 #undef min
 #include <fstream>
 
-#define ROH 0.01f
-
-#define GRAVITY -9.8f
-
-#define ALPHA 1.0f
-#define BETA 1.0f
-#define EP 0.01f
-#define TAU 0.97f
-
-#define T_AMBIENT 0.0f
 
 
 #include "blurfilter.h"
-
+#define D_PRESSUREIT true
+#define D_TEMPIT true
+#define D_CLUTHU true
 // Globals:
 MACGrid target;
 
 // NOTE: x -> cols, z -> rows, y -> stacks  
-MACGrid::RenderMode MACGrid::theRenderMode = SHEETS;   
+MACGrid::RenderMode MACGrid::theRenderMode = SHEETS;
 bool MACGrid::theDisplayVel = false;
 
 #define FOR_EACH_CELL \
@@ -47,25 +39,32 @@ bool MACGrid::theDisplayVel = false;
 #define FOR_EACH_FACE \
    for(int k = 0; k < theDim[MACGrid::Z]+1; k++) \
       for(int j = 0; j < theDim[MACGrid::Y]+1; j++) \
-         for(int i = 0; i < theDim[MACGrid::X]+1; i++)    
-
-
-
-#define FOR_EACH_FACE_X \
-   for(int k = 0; k < theDim[MACGrid::Z]; k++) \
-      for(int j = 0; j < theDim[MACGrid::Y]; j++) \
          for(int i = 0; i < theDim[MACGrid::X]+1; i++) 
 
+#define FOR_EACH_CELLEX \
+   for(int k = 1; k < theDim[MACGrid::Z]; k++)  \
+      for(int j = 1; j < theDim[MACGrid::Y]; j++) \
+         for(int i = 1; i < theDim[MACGrid::X]; i++) 
 
-#define FOR_EACH_FACE_Y \
-   for(int k = 0; k < theDim[MACGrid::Z]; k++) \
-      for(int j = 0; j < theDim[MACGrid::Y]+1; j++) \
-         for(int i = 0; i < theDim[MACGrid::X]; i++) 
 
-#define FOR_EACH_FACE_Z \
-   for(int k = 0; k < theDim[MACGrid::Z]+1; k++) \
-      for(int j = 0; j < theDim[MACGrid::Y]; j++) \
-         for(int i = 0; i < theDim[MACGrid::X]; i++) 
+
+bool MACGrid::isValidFace(int i, int j, int k)
+{
+	if (i >= theDim[MACGrid::X] + 1 || j >= theDim[MACGrid::Y] + 1 || k >= theDim[MACGrid::Z] + 1) {
+		return false;
+	}
+
+	if (i < 0 || j < 0 || k < 0) {
+		return false;
+	}
+	//if(this->mSolids(i,j,k)>0)
+	//{
+	//	return false;
+	//}
+
+	return true;
+}
+
 MACGrid::MACGrid()
 {
    initialize();  
@@ -77,6 +76,7 @@ MACGrid::MACGrid()
    m_2dx = 2.0 * m_dx;
    m_dt = 0.04; 
    m_dtdx = m_dt / m_dx;
+   mimg.readin(L"C:/Users/orochi2k/CIS563final/test1.bmp");
 }
 
 MACGrid::MACGrid(const MACGrid& orig)
@@ -88,7 +88,7 @@ MACGrid::MACGrid(const MACGrid& orig)
    mD = orig.mD;
    mT = orig.mT; 
 
-   //memory allocation for blurfilter pointer      
+   //memory allocation for blurfilter pointer    
    mFilter = new BlurFilter;
 
    //set up dx here 
@@ -144,145 +144,89 @@ void MACGrid::initialize()
 void MACGrid::updateSources()
 {
     // TODO: Set initial values for density, temperature, and velocity.         
-	mU (4,49,0) = 0; 
-	mV (4,49,0) = 10; 
-	mW (4,49,0) = 0; 
-	mD (4,0,0) = 10.0; 
-    mT (4,0,0) = 10;  
+	mV (19,1,0) = 1; 
+	mD (19,0,0) = 10.0; 
+    //mT (19,0,0) = 10;  
+	/*mU(1,2,0) = 4;
+	mD(0,2,0) = 0.8;
+	mT(0,2,0) = 9;*/
 
-	for(int i=0; i < theDim[MACGrid::Y]; ++i)
-	{
-			for(int j=0; j < theDim[MACGrid::X]; ++j)
-			{
-				//seems like I should not do anything about starting(source) density here, but the target density should be initialized later on
-				
-				//I don't know why I cannot set the z density to be 0 (but I should do it) 
-				mTargetDensity(i+1, j+1, 1) = tarDensity(i, j, 1);
-				//mTargetDensity(i+1, j+1, 1) = 1.0; 
-			}
-	}
+	//for(int i=0; i < theDim[MACGrid::Y]; ++i)
+	//{
+	//		for(int j=0; j < theDim[MACGrid::X]; ++j)
+	//		{
+	//			//seems like I should not do anything about starting(source) density here, but the target density should be initialized later on
+	//			//mDensity(i+1, j+1, 1) = srcDensity(i, j, 1);     
+	//			mTargetDensity(i+1, j+1, 1) = tarDensity(i, j, 1);
+	//		}
+	//}
 
 	//think about this where do you need to place the scaleMass ?  probably not 
 	//scaleMass();
 }
-/*
+
 void MACGrid::advectVelocity(double dt)
 {
-    // TODO: Calculate new velocities and store in target.          
-   target.mV = mV;
-   target.mU = mU;
-   target.mW = mW;
+    // TODO: Calculate new velocities and store in target.
+	target.mU = mU;
+    target.mV = mV;
+    target.mW = mW;
+	////////////////////////////////////////////////////q////////////////////////
+	//vec3 totalforce(0,-9.8,0);
+	FOR_EACH_FACE
+	{
+		//vec3 v = getVelocity(vec3(getCenter(i,j,k)));
+		//vec3 poslast = vec3(i-v[0]*dt,j-v[1]*dt,k-v[2]*dt);
+		//vec3 world = vec3(floor(i-v[0]*dt),floor(j-v[1]*dt),floor(k-v[2]*dt));
+		//double aU = (poslast[0] - floor(poslast[0]));
+		vec3 pnow = getCenter(i,j,k);
+		//pnow -= vec3(theCellSize /2 , theCellSize /2,theCellSize/2);
+		vec3 pnowX =  pnow - vec3(theCellSize /2 , 0,0);
+		vec3 pnowY =  pnow - vec3(0 , theCellSize /2,0);
+		vec3 pnowZ =  pnow - vec3(0 , 0,theCellSize /2);
+		vec3 vX = getVelocity(vec3(pnowX));
+		vec3 vY = getVelocity(vec3(pnowY));
+		vec3 vZ = getVelocity(vec3(pnowZ));
+		vec3 plastX = pnowX - vX * dt;
+		vec3 plastY = pnowY - vY * dt;
+		vec3 plastZ = pnowZ - vZ * dt;
+		//if(plast[0] < 0) 
+		//	plast[0] = 0;
+		//if(plast[1] < 0) 
+		//	plast[1] = 0;
+		//if(plast[2] < 0) 
+		//	plast[2] = 0;
 
-   for(int k = 0; k < theDim[MACGrid::Z]; k++) 
-   {
-      for(int j = 0; j < theDim[MACGrid::Y]+1; j++) 
-	  {
-         for(int i = 0; i < theDim[MACGrid::X]; i++) 
-		 {
-	        //consider the velocity V first    
-			double xAxis = (double)(theCellSize*(i+i+1+i+i+1)/4.0);
-			double yAxis = (double)(theCellSize*j); 
-		    double zAxis = (double)(theCellSize*(k+k+1+k+k+1)/4.0);
-			vec3 pV  = vec3 (xAxis, yAxis, zAxis);   
-			vec3 cVel = getVelocity (pV);        
-			vec3 oldPV = pV -dt*cVel; 
 
-			//check boundary for oldPV  
-			if(oldPV[0] <= 0) 
-			{
-				oldPV[0] = 0; 
-			}
-			if(oldPV[1] <= 0) 
-			{
-				oldPV[1] = 0; 
-			}
-			if(oldPV[2] <= 0) 
-			{
-				oldPV[2] = 0; 
-			}
+		/*if(plastX[0] < 0) 
+			plastX[0] = 0;
+		if(plastX[1] < 0) 
+			plastX[1] = 0;
+		if(plastX[2] < 0) 
+			plastX[2] = 0;
+		if(plastY[0] < 0) 
+			plastY[0] = 0;
+		if(plastY[1] < 0) 
+			plastY[1] = 0;
+		if(plastY[2] < 0) 
+			plastY[2] = 0;
+		if(plastZ[0] < 0) 
+			plastZ[0] = 0;
+		if(plastZ[1] < 0) 
+			plastZ[1] = 0;
+		if(plastZ[2] < 0) 
+			plastZ[2] = 0;*/
 
-			vec3 oldcVel = getVelocity (oldPV);  
 
-			target.mU (i, j, k) = oldcVel[0]; 
-			target.mV (i, j, k) = oldcVel[1]; 
-			target.mW (i, j, k) = oldcVel[2]; 
-		 }
-	  }   
-	}       
-
-   //only update the x axis 
-   for(int k = 0; k < theDim[MACGrid::Z]; k++) 
-   {
-      for(int j = 0; j <  theDim[MACGrid::Y]; j++) 
-	  {
-         for(int i = 0; i <  theDim[MACGrid::X]+1; i++) 
-		 {
-	        //consider the velocity V      I
-		    double xAxis = (double) (theCellSize*i); 
-			double yAxis = (double)(theCellSize*(j+j+1+j+j+1)/4.0); 
-			double zAxis = (double)(theCellSize*(k+k+1+k+k+1)/4.0); 
-			vec3 pU  = vec3 (xAxis, yAxis, zAxis);  
-			vec3 cVel = getVelocity (pU);
-			vec3 oldPU = pU -dt*cVel;     
-
-			//check boundary for oldPV     
-			if(oldPU[0] <= 0) 
-			{
-				oldPU[0] = 0; 
-			}
-			if(oldPU[1] <= 0)  
-			{
-				oldPU[1] = 0; 
-			}
-			if(oldPU[2] <= 0) 
-			{
-				oldPU[2] = 0; 
-			}
-
-			vec3 oldcVel = getVelocity (oldPU);
-
-			target.mU (i, j, k) = oldcVel[0];
-			target.mV (i, j, k) = oldcVel[1];
-			target.mW (i, j, k) = oldcVel[2];
-		 }
-	  }  
+		//if(!this->areyousoild(plastX))
+		target.mU(i,j,k) =  getVelocity(plastX)[0];
+		//if(!this->areyousoild(plastY))
+		target.mV(i,j,k) =  getVelocity(plastY)[1];
+		//if(!this->areyousoild(plastZ))
+		target.mW(i,j,k) =  getVelocity(plastZ)[2];
 	}
-
-   //update in z axis   
-   for(int k = 0; k < theDim[MACGrid::Z]+1; k++) 
-   {
-      for(int j = 0; j < theDim[MACGrid::Y]; j++) 
-	  {
-         for(int i = 0; i < theDim[MACGrid::X]; i++) 
-		 {
-	        //consider the velocity V      
-			double xAxis = (double)(theCellSize*(i+i+1+i+i+1)/4.0); 
-			double yAxis = (double)(theCellSize*(j+j+1+j+j+1)/4.0); 
-			double zAxis = (double)(theCellSize*k);   
-			vec3 pW  = vec3 (xAxis, yAxis, zAxis);  
-			vec3 cVel = getVelocity (pW); 
-            vec3 oldPW = pW - dt*cVel; 
-
-			//check boundary for oldPV    
-			if(oldPW[0] <= 0) 
-			{
-				oldPW[0] = 0; 
-			}
-			if(oldPW[1] <= 0) 
-			{
-				oldPW[1] = 0; 
-			}
-			if(oldPW[2] <= 0) 
-			{
-				oldPW[2] = 0; 
-			}
-			vec3 oldcVel = getVelocity (oldPW);
-			target.mU (i, j, k) = oldcVel[0];
-			target.mV (i, j, k) = oldcVel[1];
-			target.mW (i, j, k) = oldcVel[2];
-		 }
-	  }
-	}
+	////////////////////////////////////////////////////////////////////////////
+    // Then save the result to our object.
     mU = target.mU;
     mV = target.mV;
     mW = target.mW;
@@ -291,307 +235,161 @@ void MACGrid::advectVelocity(double dt)
 void MACGrid::advectTemperature(double dt)
 {
     // TODO: Calculate new temp and store in target.
-   target.mT = mT;
-   for(int k = 0; k < theDim[MACGrid::Z]; k++) 
-   {
-      for(int j = 0; j < theDim[MACGrid::Y]; j++) 
-	  {
-         for(int i = 0; i < theDim[MACGrid::X]; i++) 
-		 { 
-			vec3 P = getCenter(i, j, k);
-			vec3 temV = getVelocity(P);  
-			vec3 oldP = P -dt*temV; 
-			if(oldP[0] <= 0)    
-			{
-				oldP = vec3(0, oldP[1], oldP[2]); 
-			}
-			if(oldP[1] <= 0) 
-			{
-				oldP = vec3(oldP[0], 0, oldP[2]);   
-			}
-			if(oldP[2] <= 0) 
-			{
-				oldP = vec3(oldP[0], oldP[1], 0); 
-			}
-			double oldTem = getTemperature(oldP); 
-			target.mT (i, j, k) = oldTem; 
-			//cout<<"mT"<<target.mT (i, j, k)<<endl;   
-		 }
-	  } 
-   }
-   mT = target.mT;    
-
-}
-
-void MACGrid::advectDensity(double dt)
-{
-   target.mD = mD; 
-   for(int k = 0; k < theDim[MACGrid::Z]; k++) 
-   {
-      for(int j = 0; j < theDim[MACGrid::Y]; j++) 
-	  {
-         for(int i = 0; i < theDim[MACGrid::X]; i++) 
-		 {
-			vec3 pD = getCenter(i, j, k);    
-			vec3 Density = getVelocity(pD); 
-			vec3 oldPD = pD - dt*Density;   
-
-			//check boundary for oldPV   
-			if(oldPD[0] <= 0)    
-			{
-				oldPD = vec3(0, oldPD[1], oldPD[2]); 
-			}
-			if(oldPD[1] <= 0) 
-			{
-				oldPD = vec3(oldPD[0], 0, oldPD[2]);   
-			}
-			if(oldPD[2] <= 0) 
-			{
-				oldPD = vec3(oldPD[0], oldPD[1], 0); 
-			}
-			double oldDen = getDensity (oldPD);
-			target.mD (i, j, k) = oldDen; 
-		 }
-	  }
-   }
-   mD = target.mD;     
-}
-*/
-
-void MACGrid::advectVelocity(double dt)
-{
-   target.mU = mU;
-   target.mV = mV;
-   target.mW = mW;
-   vec3 oldPosition,oldVelocity;
-   FOR_EACH_FACE_X{
-		//ignore boundary faces:
-		if(i > 0 && i < theDim[MACGrid::X]){
-			vec3 currentPosition = getFaceCenterX(i, j, k);
-			//get old position:
-			oldPosition = currentPosition - getVelocity(currentPosition) * dt;
-			//obtain velocity at old position by interpolation:
-			oldVelocity = getVelocity(oldPosition);
-			//this will be the velocity at the face in the next time step:
-			target.mU(i, j, k) = oldVelocity[0];
-		}
-	}
-	
-	//advect velocity for y-faces:   
-	FOR_EACH_FACE_Y{
-		//ignore boundary faces:
-		if(j > 0 && j < theDim[MACGrid::Y]){
-			vec3 currentPosition = getFaceCenterY(i, j, k);
-			//get old position:
-			oldPosition = currentPosition - getVelocity(currentPosition) * dt;
-			//obtain velocity at old position by interpolation:
-			oldVelocity = getVelocity(oldPosition);
-			//this will be the velocity at the face in the next time step:  
-			target.mV(i, j, k) = oldVelocity[1];	
-		}
-	}
-	
-	//advect velocity for z-faces:
-	FOR_EACH_FACE_Z{
-		//ignore boundary faces:
-		if(k > 0 && k < theDim[MACGrid::Z]){
-			vec3 currentPosition = getFaceCenterZ(i, j, k);
-			//get old position:
-			oldPosition = currentPosition - getVelocity(currentPosition) * dt;
-			//obtain velocity at old position by interpolation:
-			oldVelocity = getVelocity(oldPosition);
-			//this will be the velocity at the face in the next time step:
-			target.mW(i, j, k) = oldVelocity[2];
-		}
-	}
-	
-	mU = target.mU;
-	mV = target.mV;
-	mW = target.mW;
-}
-
-vec3 MACGrid::getFaceCenterX(int i, int j, int k){
-	double x = i * theCellSize;
-	double y = j + (0.5 * theCellSize); 
-	double z = k + (0.5 * theCellSize);
-	return vec3(x, y, z);
-}
-
-vec3 MACGrid::getFaceCenterY(int i, int j, int k){
-	double xstart = theCellSize/2.0;
-	double ystart = theCellSize/2.0;
-	double zstart = theCellSize/2.0;
-
-	double x = xstart + i * theCellSize; 
-	double y = j * theCellSize;
-	double z = zstart + k * theCellSize;
-	return vec3(x, y, z);
-}
-
-vec3 MACGrid::getFaceCenterZ(int i, int j, int k){
-	double xstart = theCellSize/2.0;
-	double ystart = theCellSize/2.0;
-	double zstart = theCellSize/2.0;
-
-	double x = xstart + i * theCellSize; 
-	double y = j * theCellSize;
-	double z = zstart + k * theCellSize;
-	return vec3(x, y, z);
-}
-
-
-void MACGrid::advectTemperature(double dt)
-{
 	target.mT = mT;
-	vec3 oldPosition;
-	//advect temprature for cell centers:
-	FOR_EACH_CELL{
-		//get the current position:
-		vec3 currentPosition = getCenter(i, j, k);
-		//get old position:
-		oldPosition = currentPosition - getVelocity(currentPosition) * dt;
-		target.mT(i, j, k) = getTemperature(oldPosition);			
+	FOR_EACH_CELL
+	{
+		vec3 pnow = getCenter(i,j,k);
+		vec3 v = getVelocity(vec3(pnow));
+		vec3 plast = pnow - v * dt;
+		/*if(plast[0] < 0) 
+			plast[0] = 0;
+		if(plast[1] < 0) 
+			plast[1] = 0;
+		if(plast[2] < 0) 
+			plast[2] = 0;*/
+		/*if(!this->areyousoild(plast))*/
+		target.mT(i,j,k) =  this->getTemperature(plast);
 	}
     // Then save the result to our object.
     mT = target.mT;
 }
 
-
 void MACGrid::advectDensity(double dt)
 {
+    // TODO: Calculate new densitities and store in target.
 	target.mD = mD;
-	vec3 oldPosition;
-	//advect density for cell centers:
-	FOR_EACH_CELL{
-		//get the current position:
-		vec3 currentPosition = getCenter(i, j, k);
-		//Euler Integration:
-		//get old position:
-		oldPosition = currentPosition - getVelocity(currentPosition) * dt;
-		target.mD(i, j, k) = getDensity(oldPosition);
+	FOR_EACH_CELL
+	{
+		vec3 pnow = getCenter(i,j,k);
+		vec3 v = getVelocity(vec3(pnow));
+		vec3 plast = pnow - v * dt;
+		/*if(plast[0] < 0) 
+			plast[0] = 0;
+		if(plast[1] < 0) 
+			plast[1] = 0;
+		if(plast[2] < 0) 
+			plast[2] = 0;*/
+		/*if(!this->areyousoild(plast))*/
+		target.mD(i,j,k) =  this->getDensity(plast);
 	}
     // Then save the result to our object.
     mD = target.mD;
 }
+
 void MACGrid::computeBouyancy(double dt)
 {
-	// TODO: Calculate bouyancy and store in target.  
+	// TODO: Calculate bouyancy and store in target.
 	target.mV = mV;
-   // Then save the result to our object.    
-   double alpha = 5.0; 
-   double beta = 15.0; 
-   double Tambiant = 20.0; 
-
-   //set boundary for mv           
-    for(int k = 0; k < theDim[MACGrid::Z]; k++) 
+	bool bypass = false;
+	if(D_TEMPIT)
 	{
-      for(int j = 1; j < theDim[MACGrid::Y]; j++) 
-	  {
-         for(int i = 0; i < theDim[MACGrid::X]; i++) 
-		 {
-		     if((j+1) < theDim[MACGrid::Y])
-			 {
-				 double Fbouy = -alpha*((mD(i,j,k) + mD(i,j+1,k))/2.0)  + beta*((mT(i,j,k)+ mT(i,j+1, k))/2.0 - Tambiant); 
-				 target.mV (i,j,k) = target.mV(i,j,k) + Fbouy*dt; 
-			 }
-		 }    
-	  }  
+	///////////////////////////////////////////////////
+		FOR_EACH_CELL
+		{
+			//target.mV(i,j,k) += dt * 0.5 * (target.mT(i,j,k) - 0);
+			if (bypass || (isValidCell(i,j,k) && isValidCell(i,j+1,k)))
+			{
+			 target.mV(i,j+1,k) += dt * 0.5 * (target.mT(i,j,k)  - 0); 
+			 //target.mV(i,j,k) += dt * 0.5 * (target.mT(i,j,k)  - 0) / 2; 
+			}
+		}
+	///////////////////////////////////////////////////
 	}
-
-   mV = target.mV; 
+   // Then save the result to our object.
+   mV = target.mV;
 }
 
 void MACGrid::computeVorticityConfinement(double dt)
 {
 	// TODO: Calculate vorticity confinement forces.
-	// Apply the forces to the current velocity and store the result in target.   
-
-    //calculate the memory here 
-	int Memlength = theDim[MACGrid::Z]*theDim[MACGrid::Y]*theDim[MACGrid::X];
-
-	vector <vec3> w (Memlength); 
-	vector <vec3> wLength (Memlength); 
-	vector <vec3> N (Memlength); 
-	vector <vec3> Fconf (Memlength); 
-
+	// Apply the forces to the current velocity and store the result in target.
 	target.mU = mU;
 	target.mV = mV;
 	target.mW = mW;
-
-	for(int k = 1; k < theDim[MACGrid::Z]; k++) 
+	////////////////////////
+	GridData the_CLUTHU; 
+	GridData the_FX; 
+	GridData the_FY;
+	GridData the_FZ; 
+	the_FX.initialize(0.0);
+	the_FY.initialize(0.0);
+	the_FZ.initialize(0.0);
+	the_CLUTHU.initialize(0.0);
+	bool bypass = false;
+	if( D_CLUTHU)
 	{
-      for(int j = 1; j < theDim[MACGrid::Y]; j++) 
-	  {
-         for(int i = 1; i < theDim[MACGrid::X]; i++) 
-		 {
-		    int index = i+j*theDim[MACGrid::X]+k*theDim[MACGrid::Y]*theDim[MACGrid::X];
-		    w [index] = vec3((target.mW(i, j+1, k)-target.mW(i, j-1, k))/(2*theCellSize)-(target.mV(i, j, k+1)-target.mV(i,j,k-1))/(2*theCellSize), (target.mU(i, j, k+1)-target.mU(i,j,k-1))/(2*theCellSize)-(target.mW(i+1,j,k)-target.mW(i-1,j,k))/(2*theCellSize), (target.mV(i+1, j, k) - target.mV(i-1, j,k))/(2*theCellSize) - (target.mU(i,j+1, k) - target.mU(i,j-1,k))/(2*theCellSize));
-		 }    
-	  }         
-	}  
-	
-	for(int k = 2; k < theDim[MACGrid::Z]-1; k++)   
-	{
-      for(int j = 2; j < theDim[MACGrid::Y]-1; j++) 
-	  {
-         for(int i = 2; i < theDim[MACGrid::X]-1; i++) 
-		 {
-		    int index = i+j*theDim[MACGrid::X]+k*theDim[MACGrid::Y]*theDim[MACGrid::X];
-			int index1 = (i+1) + j*theDim[MACGrid::X] + k*theDim[MACGrid::X]*theDim[MACGrid::Y];   
-			int index2 = (i-1) + j*theDim[MACGrid::X] + k*theDim[MACGrid::X]*theDim[MACGrid::Y]; 
-			int index3 = i + (j+1)*theDim[MACGrid::X] + k*theDim[MACGrid::X]*theDim[MACGrid::Y]; 
-			int index4 = i + (j-1)*theDim[MACGrid::X] + k*theDim[MACGrid::X]*theDim[MACGrid::Y]; 
-			int index5 = i + j*theDim[MACGrid::X] + (k+1)*theDim[MACGrid::X]*theDim[MACGrid::Y]; 
-			int index6 = i + j*theDim[MACGrid::X] + (k-1)*theDim[MACGrid::X]*theDim[MACGrid::Y]; 
+       FOR_EACH_CELLEX
+	   {
+		   vec3 www = vec3();
+		   www[0] =	(mW(i,j+1,k)-mW(i,j-1,k) - mV(i,j,k+1)+mV(i,j,k-1))/(2 *theCellSize);
+		   www[1] = 	(mU(i,j,k+1)-mU(i,j,k-1) - mW(i+1,j,k)+mW(i-1,j,k))/(2*theCellSize);
+		   www[2] =    (mV(i+1,j,k+1)-mV(i-1,j,k) - mU(i,j+1,k)+mU(i,j-1,k))/(2*theCellSize);
+		   the_CLUTHU(i,j,k) = www.Length();
+	   }
 
-			wLength[index] = vec3((w[index1].Length() - w[index2].Length())/(2*theCellSize), (w[index3].Length() - w[index4].Length())/(2*theCellSize), (w[index5].Length() - w[index6].Length())/(2*theCellSize)); 
-
-		 }    
-	  }         
-	}    
-
-	
-	for(int k = 2; k < theDim[MACGrid::Z]-1; k++) 
-	{
-      for(int j = 2; j < theDim[MACGrid::Y]-1; j++) 
-	  {
-         for(int i = 2; i < theDim[MACGrid::X]-1; i++) 
+	 //  FOR_EACH_CELL
+	 //  {
+		//vec3 www = vec3();
+		//www[0] =	(mW(i,j+1,k)-mW(i,j-1,k) - mV(i,j,k+1)+mV(i,j,k-1))/(2 *theCellSize);
+		//www[1] = 	(mU(i,j,k+1)-mU(i,j,k-1) - mW(i+1,j,k)+mW(i-1,j,k))/(2*theCellSize);
+		//www[2] =    (mV(i+1,j,k+1)-mV(i-1,j,k) - mU(i,j+1,k)+mU(i,j-1,k))/(2*theCellSize);
+		//the_CLUTHU(i,j,k) = www.Length();
+		///* vec3 pnow = getCenter(i,j,k);
+		// vec3 v = getVelocity(vec3(pnow));
+		// vec3 cluthu = vec3((v[2] - v[1])/theCellSize,(v[0]-v[2])/theCellSize,(v[1]-v[0])/theCellSize);
+		// the_CLUTHU(i,j,k) = cluthu.Length();
+		// if(i == 0 || j== 0||k== 0)
+		// {
+		//	 continue;
+		// }
+		// vec3 N;
+		// N[0] = the_CLUTHU(i,j,k) - the_CLUTHU(i-1,j,k);
+		// N[1] = the_CLUTHU(i,j,k) - the_CLUTHU(i,j-1,k);
+		// N[2] = the_CLUTHU(i,j,k) - the_CLUTHU(i,j,k-1);*/
+	 //  }
+	      FOR_EACH_FACE
 		 {
-		    int index = i+j*theDim[MACGrid::X]+k*theDim[MACGrid::Y]*theDim[MACGrid::X];
-			if((i>0)&&(j>0)&&(k>0)&&((i+1)<theDim[MACGrid::X])&&((j+1)<theDim[MACGrid::Y])&&((k+1)<theDim[MACGrid::Z]))
-			{
-				N[index] = wLength[index].Normalize(); 
-			}
-		 }    
-	  }         
+		 if(isValidFace(i,j,k) && isValidFace(i,j+1,k)&&isValidFace(i+1,j,k)&&isValidFace(i,j,k+1)&&isValidFace(i,j-1,k)&&isValidFace(i-1,j,k)&&isValidFace(i,j,k-1))
+		 {
+		vec3 www = vec3();
+		www[0] =	(mW(i,j+1,k)-mW(i,j-1,k) - mV(i,j,k+1)+mV(i,j,k-1))/(2 *theCellSize);
+		www[1] = 	(mU(i,j,k+1)-mU(i,j,k-1) - mW(i+1,j,k)+mW(i-1,j,k))/(2*theCellSize);
+		www[2] =    (mV(i+1,j,k+1)-mV(i-1,j,k) - mU(i,j+1,k)+mU(i,j-1,k))/(2*theCellSize);
+
+		 vec3 dwww = vec3();
+		 dwww[0] = (the_CLUTHU(i+1,j,k)- the_CLUTHU(i-1,j,k))/ (2 * theCellSize);
+		 dwww[1] = (the_CLUTHU(i,j+1,k)- the_CLUTHU(i,j-1,k))/ (2 * theCellSize);
+		 dwww[2] = (the_CLUTHU(i,j,k+1)- the_CLUTHU(i,j,k-1))/ (2 * theCellSize);
+		 vec3 nwww = dwww / (dwww.Length() + 0.0000000000000000001);
+		 vec3 force = 0.8* theCellSize * (nwww.Cross(www));
+		 if(i >= 1 && i <= theDim[MACGrid::X] - 1 )
+		 {
+		 target.mU(i,j,k) += force[0] * dt;
+		 //target.mU(i,j,k) += force[0] * dt;
+		 }
+		// the_FX(i,j,k) = force[0] * dt;
+		 if(j >= 1  && j <= theDim[MACGrid::Y] - 1)
+		 {
+		 target.mV(i,j,k) += force[1] * dt;
+		 // target.mV(i,j,k) += force[1] * dt;
+		 }
+		// the_FY(i,j,k) = force[1] * dt;
+		 if(k >= 1  && k <= theDim[MACGrid::Z] - 1)
+		 {
+		 target.mW(i,j,k) += force[2] * dt;
+		 // target.mW(i,j,k) += force[2] * dt;
+		 }
+		// the_FZ(i,j,k) = force[2] * dt;
+		 }
+		 
+	   }
 	}
-
-	double epislon = 50.00; 
-	for(int k = 2; k < theDim[MACGrid::Z]-1; k++) 
-	{
-      for(int j = 2; j < theDim[MACGrid::Y]-1; j++) 
-	  {
-         for(int i = 2; i < theDim[MACGrid::X]-1; i++) 
-		 {
-		    int index = i+j*theDim[MACGrid::X]+k*theDim[MACGrid::Y]*theDim[MACGrid::X];
-			if((i>0)&&(j>0)&&(k>0)&&((i+1)<theDim[MACGrid::X])&&((j+1)<theDim[MACGrid::Y])&&((k+1)<theDim[MACGrid::Z]))
-			{
-				Fconf[index] = epislon*theCellSize*N[index].Cross(w[index]); 
-				vec3 temp = Fconf[index]; 
-
-				target.mU (i,j,k) = target.mU(i,j,k) + temp[0]*dt; 
-				target.mV (i,j,k) = target.mV(i,j,k) + temp[1]*dt;
-				target.mW (i,j,k) = target.mW(i,j,k) + temp[2]*dt;
-			} 
-		 }    
-	  }         
-	}  
-
+	////////////////////////
+	// Then save the result to our object.
 	mU = target.mU;
 	mV = target.mV;
-	mW = target.mW;   
+	mW = target.mW;
 }
-
 void MACGrid::addExternalForces(double dt)
 {
      computeBouyancy(dt);
@@ -600,48 +398,80 @@ void MACGrid::addExternalForces(double dt)
 
 void MACGrid::project(double dt)
 {
-	// 1. Construct d   
-	GridData d = mP;
-	FOR_EACH_CELL d(i, j, k) = 0.0;
-
-	double c = -theCellSize * theCellSize * ROH / dt;
-	
-	FOR_EACH_CELL {
-		d(i, j, k) = c * (((mU(i+1, j, k ) - mU(i, j, k))/ theCellSize) + ((mV(i, j+1, k ) - mV(i, j, k))/ theCellSize) + ((mW(i, j, k+1) - mW(i, j, k))/ theCellSize));
-	}
-
+	// TODO: Solve Ap = d for pressure.
+	// 1. Construct d
 	// 2. Construct A
-		setUpAMatrix();
-	//	precon.initialize(0);
-	//	setupPreconditioner();
 	// 3. Solve for p
-	conjugateGradient(AMatrix, mP, d, 250, 0.001);
-	// Subtract pressure from our velocity and save in target.      
+	// Subtract pressure from our velocity and save in target.
 	target.mP = mP;
 	target.mU = mU;
 	target.mV = mV;
 	target.mW = mW;
-	
-	FOR_EACH_FACE_X{
-	//ignore boundary faces:
-		if(i > 0 && i < theDim[MACGrid::X]){
-			target.mU(i, j, k) = mU(i, j, k) - (dt * 1/ROH * (target.mP(i, j, k) - target.mP(i - 1, j, k)) / theCellSize); 
+	if(D_PRESSUREIT)
+	{
+	/////////////////////////////////////////////////////////////
+	GridData the_d; 
+	the_d.initialize(0.0);
+	FOR_EACH_CELL
+	{
+		double vx1 = mU(i+1,j,k);
+		double vx2 = mU(i,j,k);
+		double vy1 = mV(i,j+1,k);
+		double vy2 = mV(i,j,k);
+		double vz1 = mW(i,j,k+1);
+		double vz2 = mW(i,j,k);
+		/*if(this->mSolids(i,j,k) > 0)
+		{
+			vx2 = 0;
+			vy2 = 0;
+			vz2 = 0;
+		}*/
+		/*if(this->mSolids(i+1,j,k) > 0)
+		{
+			vx1 = 0;
 		}
-	}
-	//update velocity for y-faces:
-	FOR_EACH_FACE_Y{
-	//ignore boundary faces:
-		if(j > 0 && j < theDim[MACGrid::Y]){
-			target.mV(i, j, k) = mV(i, j, k) - (dt * 1/ROH * (target.mP(i, j, k) - target.mP(i, j - 1, k)) / theCellSize);
+		if(this->mSolids(i,j+1,k) > 0)
+		{
+			vy1 = 0;
 		}
+		if(this->mSolids(i,j,k+1) > 0)
+		{
+			vz1 = 0;
+		}*/
+		the_d(i,j,k) = (vx1 -vx2)/theCellSize + (vy1 -vy2)/theCellSize + (vz1 -vz2)/theCellSize;
+		//double rou = target.mD(i,j,k) / 50.0 + 0.001;
+		the_d(i,j,k) *= - (theCellSize * theCellSize) * 1 /dt;
+		//the_d(i,j,k) *= -10;
 	}
-	FOR_EACH_FACE_Z{
-		//ignore boundary faces:
-		if(k > 0 && k < theDim[MACGrid::Z]){
-			target.mW(i, j, k) = mW(i, j, k) - (dt * 1/ROH * (target.mP(i, j, k) - target.mP(i, j, k - 1)) / theCellSize); 
+	setUpAMatrix();
+	bool hit = conjugateGradient(this->AMatrix,target.mP,the_d,256,0.5);
+	bool bypass = false;
+		FOR_EACH_CELL
+		{  
+			/*if(mD(i,j,k) == 0)
+			{
+				continue;
+			}*/
+			//double change_P = (target.mP(i,j,k) - mP(i,j,k))/ theCellSize ;
+			//change_P = target.mP(i,j,k) / theCellSize;
+			//PRINT_LINE(change_P);
+			//double rou = target.mD(i,j,k) / 50.0 + 0.001;
+			double rou = 1;
+			if (bypass || (isValidCell(i,j,k) && isValidCell(i-1,j,k)))
+			{
+			target.mU(i,j,k) = target.mU(i,j,k) - dt * 1.0 / rou * (target.mP(i,j,k) - target.mP(i-1,j,k))/ theCellSize;
+			}
+			if (bypass || (isValidCell(i,j,k) && isValidCell(i,j-1,k)))
+			{
+			target.mV(i,j,k) = target.mV(i,j,k) - dt * 1.0 / rou * (target.mP(i,j,k) - target.mP(i,j-1,k))/ theCellSize;
+			}
+			if (bypass || (isValidCell(i,j,k) && isValidCell(i,j,k-1))) 
+			{
+			target.mW(i,j,k) = target.mW(i,j,k) - dt * 1.0 / rou * (target.mP(i,j,k) - target.mP(i,j,k-1))/ theCellSize;
+			}
 		}
+	/////////////////////////////////////////////////////////////
 	}
-
 	// Then save the result to our object
 	mP = target.mP;
 	mU = target.mU;
@@ -649,146 +479,6 @@ void MACGrid::project(double dt)
 	mW = target.mW;
 	// IMPLEMENT THIS AS A SANITY CHECK: assert (checkDivergence());
 }
-
-/*
-void MACGrid::project(double dt)
-{
-	// TODO: Solve Ap = d for pressure.       
-	// 1. Construct d
-	// 2. Construct A
-	// 3. Solve for p
-	// Subtract pressure from our velocity and save in target.  
-	target.mP = mP;
-	target.mU = mU;
-	target.mV = mV;
-	target.mW = mW;
-	// Then save the result to our object
-    setUpAMatrix(); 
-
-	//initialize d    
-	GridData initialNum; 
-	initialNum.initialize(0); 
-	//GridData& d = initialNum;  
-	GridData d; 
-	d.initialize(0); 
-
-	for(int k = 0; k < theDim[MACGrid::Z]; k++)
-	{
-      for(int j = 0; j < theDim[MACGrid::Y]; j++)
-	  {
-         for(int i = 0; i < theDim[MACGrid::X]; i++) 
-		 {
-			if((i+1) == theDim[MACGrid::X])
-			{
-				target.mU ((i+1), j, k) = 0; 
-			}
-			if((j+1) == theDim[MACGrid::Y])
-			{
-				target.mV (i, (j+1) , k) = 0; 
-			}
-			if((k+1) == theDim[MACGrid::Z])
-			{
-				target.mW (i, j , (k+1)) = 0; 
-			}
-			if(i == 0)
-			{
-				target.mU (i, j, k) = 0;
-			}
-			if(j == 0)
-			{
-				target.mV (i, j ,k) = 0; 
-			}
-			if(k == 0)
-			{
-			    target.mW (i, j , k) = 0; 
-			}
-		 }
-	  }        
-   }
-
-
-
-    for(int k = 0; k < theDim[MACGrid::Z]; k++)
-	{
-      for(int j = 0; j < theDim[MACGrid::Y]; j++)
-	  {
-         for(int i = 0; i < theDim[MACGrid::X]; i++) 
-		 {
-			 d (i, j, k) = (-1.0)*theCellSize/dt*(target.mU ((i+1), j, k) - target.mU (i, j, k) + target.mV (i, (j+1), k) - target.mV (i, j, k) + target.mW (i, j, (k+1)) - target.mW (i, j, k));    
-		 }
-	  }        
-   }
-
-	//sanity check here 
-	bool checkDivergence = false; 
-
-	int i = 240; 
-	while(checkDivergence==false)
-	{
-	
-	   checkDivergence = conjugateGradient(AMatrix, target.mP, d, i, 0.01); 
-	   i = i+ 20; 
-	  // cout<<i<<endl;
-	}
-
-   if(checkDivergence)
-   {
-		for(int k = 0; k < theDim[MACGrid::Z]; k++)       
-		{
-		  for(int j = 0; j < theDim[MACGrid::Y]; j++)
-		  {
-			 for(int i = 0; i < theDim[MACGrid::X]; i++)       
-			 {
-				 if((i+1) < theDim[MACGrid::X])
-				 {
-					 target.mU (i+1, j, k) = target.mU (i+1, j, k) - dt*(target.mP(i+1, j, k) - target.mP(i, j, k))/(1.0*theCellSize); 
-				 }
-			 }     
-		  }      
-		}    
-  
-		for(int k = 0; k < theDim[MACGrid::Z]; k++)       
-		{
-		  for(int j = 0; j < theDim[MACGrid::Y]; j++)
-		  {
-			 for(int i = 0; i < theDim[MACGrid::X]; i++)       
-			 {
-				 if((j+1) < theDim[MACGrid::Y])
-				 {
-					 target.mV (i, j+1, k) = target.mV (i, j+1, k) - dt*(target.mP(i, j+1, k) - target.mP(i, j, k))/(1.0*theCellSize); 
-				 }
-			 }     
-		  }      
-		} 
-
-		for(int k = 0; k < theDim[MACGrid::Z]; k++)       
-		{
-		  for(int j = 0; j < theDim[MACGrid::Y]; j++)
-		  {
-			 for(int i = 0; i < theDim[MACGrid::X]; i++)       
-			 {
-				 if((k+1) < theDim[MACGrid::Z])
-				 {
-					 target.mW (i, j, k+1) = target.mV (i, j, k+1) - dt*(target.mP(i, j, k+1) - target.mP(i, j, k))/(1.0*theCellSize); 
-				 }
-			 }     
-		  }     
-		} 
-
-		mP = target.mP;
-		mU = target.mU;
-		mV = target.mV;
-		mW = target.mW;
-   }else
-   {
-	    mP = target.mP;
-		mU = target.mU;
-		mV = target.mV;
-		mW = target.mW;
-   }
-}
-*/
-
 
 vec3 MACGrid::getVelocity(const vec3& pt)
 {
@@ -896,7 +586,7 @@ bool MACGrid::conjugateGradient(const GridDataMatrix & A, GridData & p, const Gr
 
 	GridData z; z.initialize();
 	// TODO: Apply a preconditioner here.
-	// For now, just bypass the preconditioner:     
+	// For now, just bypass the preconditioner:   
 	
 	GridData precon; 
 	GridData q; 
@@ -1031,7 +721,7 @@ bool MACGrid::conjugateGradient(const GridDataMatrix & A, GridData & p, const Gr
 		sigma = sigmaNew;
 	}
 
-	//PRINT_LINE( "PCG didn't converge!" );  
+	//PRINT_LINE( "PCG didn't converge!" );
 	return false;
 
 }
@@ -1145,7 +835,7 @@ void MACGrid::SetParamSigma(double sigma)
 
 	for(int i=1; i < theDim[MACGrid::Y]+1; ++i)
 	{
-		for(int j=1; j < theDim[MACGrid::X]+2; ++j)   
+		for(int j=1; j < theDim[MACGrid::X]+2; ++j)
 		{
 			double GradSmoothTargetDensity = (mSmoothTargetDensity(i, j, 1) -
 												mSmoothTargetDensity(i, j-1, 1)) / m_dx;
@@ -1155,24 +845,23 @@ void MACGrid::SetParamSigma(double sigma)
 
 			mNormalizedGradV (i, j, 1) = GradSmoothTargetDensity / AvgSmoothTargetDensity;   
 		}
-    }   
+    }    
 }
 
 
 void MACGrid::applyDrivingForce()
 {
-		//mFilter->GaussianBlur(mD, mSmoothDensity);
+		mFilter->GaussianBlur(mD, mSmoothDensity);
 
-		/*
         // Apply horizontal component of driving force.
 		for(int i=1; i < theDim[MACGrid::Y] - 1; ++i)
 		{
 			for(int j=1; j < theDim[MACGrid::X] - 1; ++j)
 			{
-				double AvgSmoothDensity = (mSmoothDensity(i, j, 0) + mSmoothDensity(i-1, j, 0)) / 2.0;
-				double Fu = AvgSmoothDensity * mNormalizedGradU(i, j, 0);
+				double AvgSmoothDensity = (mSmoothDensity(i, j, 1) + mSmoothDensity(i-1, j, 1)) / 2.0;
+				double Fu = AvgSmoothDensity * mNormalizedGradU(i, j, 1);
 
-                mU(i, j, 0) += m_dt * m_vf * Fu;
+                mU(i, j, 1) += m_dt * m_vf * Fu;
 			}
 		}   
 
@@ -1181,13 +870,13 @@ void MACGrid::applyDrivingForce()
 		{
 			for(int j=1; j < theDim[MACGrid::X] - 1; ++j)
 			{
-				double AvgSmoothDensity = (mSmoothDensity(i, j, 0) + mSmoothDensity(i, j-1, 0)) / 2.0;
-				double Fv = AvgSmoothDensity * mNormalizedGradV(i, j, 0);
+				double AvgSmoothDensity = (mSmoothDensity(i, j, 1) + mSmoothDensity(i, j-1, 1)) / 2.0;
+				double Fv = AvgSmoothDensity * mNormalizedGradV(i, j, 1);
 
-                mV(i, j, 0) += m_dt * m_vf * Fv;   
+                mV(i, j, 1) += m_dt * m_vf * Fv;   
             }
         }
-		*/
+
 
 		//need to set boundaries here. We are supposed to set all the boundaries to be 0 here 
 
@@ -1202,8 +891,8 @@ void MACGrid::attenuateMomentum()
 	{
 		for(int j=1; j < theDim[MACGrid::X] - 1; ++j)
 		{
-            //mVelU(i, j) *= 1.0 - m_dt * m_vd;    
-             mU(i, j, 0) *= (1.0 - m_dt * m_vd);
+            //mVelU(i, j) *= 1.0 - m_dt * m_vd;    n
+                mU(i, j, 1) *= (1.0 - m_dt * m_vd);
 		}
 	}
 
@@ -1213,7 +902,7 @@ void MACGrid::attenuateMomentum()
 		for(int j=1; j < theDim[MACGrid::X] - 1; ++j)
 		{
             //mVelV(i, j) *= 1.0 - m_dt * m_vd;
-            mV(i, j, 0) *= (1.0 - m_dt * m_vd);
+            mV(i, j, 1) *= (1.0 - m_dt * m_vd);
 		}
 	}
 
@@ -1556,4 +1245,55 @@ void MACGrid::drawCube(const MACGrid::Cube& cube)
          glVertex3d(LEN,  LEN, -LEN);
       glEnd();
    glPopMatrix();
+}
+/////////////////////////////////////////////////////
+
+void MACGrid::evil_driven()
+{
+	double dt = 0.04;
+	target.mU = mU;
+    target.mV = mV;
+    target.mW = mW;
+	////////////////////////////////////////////////////q////////////////////////
+	//FOR_EACH_FACE
+	//{
+	//	
+	//	vec3 pnow = getCenter(i,j,k);
+	//	vec3 pnowX =  pnow - vec3(theCellSize /2 , 0,0);
+	//	vec3 pnowY =  pnow - vec3(0 , theCellSize /2,0);
+	//	vec3 pnowZ =  pnow - vec3(0 , 0,theCellSize /2);
+	//	vec3 vX = getVelocity(vec3(pnowX));
+	//	vec3 vY = getVelocity(vec3(pnowY));
+	//	vec3 vZ = getVelocity(vec3(pnowZ));
+	//	/*vec3 plastX = pnowX - vX * dt;
+	//	vec3 plastY = pnowY - vY * dt;
+	//	vec3 plastZ = pnowZ - vZ * dt;
+	//	target.mU(i,j,k) =  getVelocity(plastX)[0];
+	//	target.mV(i,j,k) =  getVelocity(plastY)[1];
+	//	target.mW(i,j,k) =  getVelocity(plastZ)[2];*/
+	//	
+	//	
+	//}
+	////////////////////////////////////////////////////////////////////////////
+	bool bypass = false;
+	///////////////////////////////////////////////////
+		FOR_EACH_CELL
+		{
+			vec3 pnow = getCenter(i,j,k);
+			vec3 v = getVelocity(vec3(pnow));
+		    vec3 pos = pnow - v * dt;
+			 int xxi = (int) (pos[0]/theCellSize);
+			 int xxj = (int) (pos[1]/theCellSize);
+			 int xxk = (int) (pos[2]/theCellSize);
+			 if(this->isValidCell(xxi,xxj,xxk))
+			 {
+				 target.mU(i,j,k) =   (1-target.mU(i,j,k)) *  mimg.getpixel(i,j).rgbtRed/255.0;
+				 target.mV(i,j,k) =   (1-target.mV(i,j,k)) *  mimg.getpixel(i,j).rgbtRed/255.0;
+			 }
+		}
+	///////////////////////////////////////////////////
+    // Then save the result to our object.
+    mU = target.mU;
+    mV = target.mV;
+    mW = target.mW;
 }
