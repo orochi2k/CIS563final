@@ -18,6 +18,7 @@ class MACGrid
 {
 
 public:
+	bool isValidFace(int i, int j, int k);
 	MACGrid();
 	~MACGrid();
 	MACGrid(const MACGrid& orig);
